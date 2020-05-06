@@ -5,8 +5,13 @@
 package it.polito.tdp.extflightdelays;
 
 import java.net.URL;
+
 import java.util.ResourceBundle;
 
+import org.jgrapht.Graph;
+import org.jgrapht.graph.DefaultWeightedEdge;
+import it.polito.tdp.extflightdelays.db.ExtFlightDelaysDAO;
+import it.polito.tdp.extflightdelays.model.Airport;
 import it.polito.tdp.extflightdelays.model.Model;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -17,6 +22,7 @@ import javafx.scene.control.TextField;
 public class FXMLController {
 
 	private Model model;
+	private ExtFlightDelaysDAO DAO;
 	
     @FXML // ResourceBundle that was given to the FXMLLoader
     private ResourceBundle resources;
@@ -35,8 +41,14 @@ public class FXMLController {
 
     @FXML
     void doAnalizzaAeroporti(ActionEvent event) {
-    	//TODO
-    }
+    	txtResult.clear();
+       	int i = Integer.parseInt(distanzaMinima.getText());
+    	Graph<Airport, DefaultWeightedEdge> grafo = model.getGraph(i);
+    	txtResult.appendText("il numero di vertici è: "+model.getGraph(i).vertexSet().size()+"\n");
+    	txtResult.appendText("il numero di archi è: "+model.getGraph(i).edgeSet().size()+"\n");
+    	for (DefaultWeightedEdge e : grafo.edgeSet()) 
+    		txtResult.appendText(grafo.getEdgeSource(e)+" "+grafo.getEdgeTarget(e)+" "+grafo.getEdgeWeight(e)+"\n");
+  }
 
     @FXML // This method is called by the FXMLLoader when initialization is complete
     void initialize() {

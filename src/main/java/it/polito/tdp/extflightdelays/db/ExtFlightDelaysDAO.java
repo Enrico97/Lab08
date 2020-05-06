@@ -7,12 +7,15 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import it.polito.tdp.extflightdelays.model.Airline;
 import it.polito.tdp.extflightdelays.model.Airport;
+import it.polito.tdp.extflightdelays.model.CoppieAereoporti;
 import it.polito.tdp.extflightdelays.model.Flight;
 
 public class ExtFlightDelaysDAO {
+	int i=0;
 
 	public List<Airline> loadAllAirlines() {
 		String sql = "SELECT * from airlines";
@@ -91,4 +94,34 @@ public class ExtFlightDelaysDAO {
 			throw new RuntimeException("Error Connection Database");
 		}
 	}
-}
+	
+	public List<CoppieAereoporti> getCoppie(Map<Integer, Airport> idMap, int distanza) {
+		String sql = "SELECT * " + 
+				"FROM (SELECT DISTINCT ORIGIN_AIRPORT_ID, DESTINATION_AIRPORT_ID, AVG(DISTANCE) as M " + 
+				"FROM flights " + 
+				"GROUP BY ORIGIN_AIRPORT_ID, DESTINATION_AIRPORT_ID " + 
+				"ORDER BY ORIGIN_AIRPORT_ID, DESTINATION_AIRPORT_ID) as voli " + 
+				"WHERE M>=?";
+		List <CoppieAereoporti> coppie = new ArrayList<>();
+		
+		try {
+			Connection conn = ConnectDB.getConnection();
+			PreparedStatement st = conn.prepareStatement(sql);
+			st.setInt(1, distanza);
+			ResultSet rs = st.executeQuery();
+			
+			while (rs.next()) {
+				CoppieAereoporti c = new CoppieAereoporti (idMap.get(rs.getInt("ORIGIN_AIRPORT_ID")), idMap.get(rs.getInt("DESTINATION_AIRPORT_ID")),rs.getInt("M"));
+			coppie.add(c);
+			i++;
+			}
+			
+			conn.close();
+			return coppie;
+	}
+		catch (SQLException e) {
+			e.printStackTrace();
+			System.out.println("Errore connessione al database");
+			throw new RuntimeException("Error Connection Database");
+		}
+}}
